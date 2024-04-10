@@ -24,7 +24,7 @@ export default function Login() {
         const form_values = Object.fromEntries(formData);
 
         try {
-            const response = await usersApi.post("/users/auth/login", form_values);
+            const response = await usersApi.post("/auth/login", form_values);
             if (response.status === 200) {
                 router.push("/");
             }
@@ -77,7 +77,7 @@ export default function Login() {
                                     name="password"
                                     placeholder="Enter password"
                                     required
-                                    minLength={6}
+                                    minLength={4}
                                 />
                                 <KeyIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
                             </div>
