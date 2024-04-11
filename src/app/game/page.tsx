@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import Header from '@/app/ui/header';
 import DrawingCanvas, { Point } from '@/app/ui/canvas';
@@ -19,6 +19,7 @@ type ActionState = {
     type: string;
     point?: Point;
 };
+
 
 const RoomPage: React.FC = () => {
     const userContext = useUserContext();
