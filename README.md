@@ -1,36 +1,18 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Description
 
-## Getting Started
+A cooperative drawing-guessing game where players collaborate in a fun and interactive environment. Players are split into drawers (admins) and guessers (users), creating a dynamic gameplay experience.
 
-First, run the development server:
+# Set-up
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Currently, the backend is not deployed. To set up the backend locally, please visit [our backend repository](https://github.com/Craco-Crac/Backend) for instructions.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+# Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- [x] Authentication system to manage user sessions.
+- [x] Main page that serves as the entry point to the game.
+- [x] Collaborative canvas for drawing, allowing multiple users to draw simultaneously.
+- [x] Role separation: drawers (admins) and guessers (users) for varied gameplay.
+- [x] In-game chat feature enabling guessers to submit their guesses.
+- [x] Round initiation with word selection for guessing to kick off the game.
+- [x] Real-time communication facilitated through WebSockets for instant updates.
+- [x] Deployment on Vercel for easy access and seamless play experience.
