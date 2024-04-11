@@ -17,18 +17,19 @@ type ChatMessage = {
 type ActionState = {
     type: string;
     point?: Point;
-  };
+};
 
 const RoomPage: React.FC = () => {
     const router = useRouter();
     const userContext = useUserContext();
+    const username = userContext?.user?.username
     const searchParams = useSearchParams();
     const roomId = searchParams.get('roomId');
     const role = searchParams.get('role');
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [action, setAction] = useState<ActionState[]>([]);
     const webSocketRef = useRef<WebSocket | null>(null);
-
+    const [isWebSocketConnected, setIsWebSocketConnected] = useState<number>(0);
     // Initialize WebSocket connection once roomId is available
     useEffect(() => {
         if (!roomId) return;
@@ -37,13 +38,14 @@ const RoomPage: React.FC = () => {
 
         webSocketRef.current.onopen = () => {
             console.log('WebSocket connection established');
+            setIsWebSocketConnected(1);
         };
 
         webSocketRef.current.onmessage = (event) => {
             console.log('WebSocket message received:', event.data);
             const data = JSON.parse(event.data);
             if (data.type === 'chat') {
-                setMessages(prevMessages => [...prevMessages, data.message]);
+                setMessages(prevMessages => [...prevMessages, data]);
             } else if (data.type.startsWith('draw')) {
                 setAction(prevPath => [...prevPath, data]);
             }
@@ -52,12 +54,19 @@ const RoomPage: React.FC = () => {
             }
         };
 
-        webSocketRef.current.onclose = () => {
-            console.log('WebSocket connection closed');
+        webSocketRef.current.onclose = (event) => {
+            console.log('WebSocket connection closed', event.code);
+            if (event.code === 4002) {
+                setIsWebSocketConnected(2);
+            }
+            else{
+                setIsWebSocketConnected(0);
+            }
         };
 
         webSocketRef.current.onerror = (error) => {
             console.error('WebSocket error:', error);
+            setIsWebSocketConnected(1);
         };
 
         // Clean up the WebSocket connection when the component unmounts
@@ -72,14 +81,16 @@ const RoomPage: React.FC = () => {
         const message = {
             type: 'chat',
             text: messageContent,
-            sender: userContext?.user?.username,
+            sender: username!,
         };
         webSocketRef.current?.send(JSON.stringify(message));
+        console.log('messages', message);
+        setMessages(prevMessages => [...prevMessages, message]);
     }, []);
 
     // Callback for sending draw actions
     const sendDrawAction = useCallback((type: string, point?: Point) => {
-        if (type === 'draw'  || type === 'draw-start') {
+        if (type === 'draw' || type === 'draw-start') {
             const drawAction = {
                 type: type,
                 point: point,
@@ -95,10 +106,14 @@ const RoomPage: React.FC = () => {
     return (
         <div className="flex flex-col h-screen">
             <Header />
-            <main className="flex flex-1">
-                <DrawingCanvas actions={action} setActions={setAction} sendDrawAction={sendDrawAction} />
-                <ChatWindow messages={messages} sendChatMessage={sendChatMessage} />
-            </main>
+            {isWebSocketConnected == 1 ? (
+                <main className="flex flex-1">
+                    <DrawingCanvas actions={action} setActions={setAction} sendDrawAction={sendDrawAction} />
+                    <ChatWindow messages={messages} sendChatMessage={sendChatMessage} />
+                </main>
+            ) : (
+                isWebSocketConnected == 2 ? <div>Too much admins</div> : <div>Loading...</div>
+            )}
         </div>
     );
 };
