@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 export type Point = { x: number; y: number };
 type DrawingCanvasProps = {
@@ -12,6 +13,8 @@ type DrawingCanvasProps = {
 const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, sendDrawAction }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [isDrawing, setIsDrawing] = useState(false);
+    const searchParams = useSearchParams();
+    const role = searchParams.get('role');
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -39,11 +42,12 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, send
             setIsDrawing(false);
         };
 
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mouseleave', stopDrawing);
-
+        if (role == 'admin') {
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseleave', stopDrawing);
+        }
         return () => {
             canvas.removeEventListener('mousedown', startDrawing);
             canvas.removeEventListener('mousemove', draw);

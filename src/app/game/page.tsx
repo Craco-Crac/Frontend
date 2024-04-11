@@ -6,7 +6,8 @@ import Header from '@/app/ui/header';
 import DrawingCanvas, { Point } from '@/app/ui/canvas';
 import ChatWindow from '@/app/ui/chat';
 import { useUserContext } from "@/app/lib/context/UserContext";
-
+import { StartForm } from '@/app/ui/startForm';
+import { gameApi } from "@/config/axios.config";
 
 type ChatMessage = {
     sender: string;
@@ -20,7 +21,6 @@ type ActionState = {
 };
 
 const RoomPage: React.FC = () => {
-    const router = useRouter();
     const userContext = useUserContext();
     const username = userContext?.user?.username
     const searchParams = useSearchParams();
@@ -30,6 +30,18 @@ const RoomPage: React.FC = () => {
     const [action, setAction] = useState<ActionState[]>([]);
     const webSocketRef = useRef<WebSocket | null>(null);
     const [isWebSocketConnected, setIsWebSocketConnected] = useState<number>(0);
+    const [isFormOpen, setIsFormOpen] = useState(false);
+
+
+    const handleOpenForm = () => setIsFormOpen(true);
+    const handleCloseForm = () => setIsFormOpen(false);
+    const handleSubmitForm = (answer: string, delay: number) => {
+        console.log("Answer Submitted: ", answer, "Delay: ", delay);
+        const delayUntilFinish = delay * 1000;
+        gameApi.post('/start/' + roomId, { answer, delayUntilFinish }).then(res => { console.log(res.data) });
+        setIsFormOpen(false); // Close the form upon submission
+    };
+
     // Initialize WebSocket connection once roomId is available
     useEffect(() => {
         if (!roomId) return;
@@ -59,7 +71,7 @@ const RoomPage: React.FC = () => {
             if (event.code === 4002) {
                 setIsWebSocketConnected(2);
             }
-            else{
+            else {
                 setIsWebSocketConnected(0);
             }
         };
@@ -105,9 +117,10 @@ const RoomPage: React.FC = () => {
 
     return (
         <div className="flex flex-col h-screen">
-            <Header />
+            <Header onOpenForm={handleOpenForm} />
             {isWebSocketConnected == 1 ? (
                 <main className="flex flex-1">
+                    <StartForm isOpen={isFormOpen} onClose={handleCloseForm} onSubmit={handleSubmitForm} />
                     <DrawingCanvas actions={action} setActions={setAction} sendDrawAction={sendDrawAction} />
                     <ChatWindow messages={messages} sendChatMessage={sendChatMessage} />
                 </main>

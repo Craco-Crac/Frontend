@@ -4,11 +4,12 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useUserContext } from "@/app/lib/context/UserContext";
 import { usersApi } from "@/config/axios.config";
 
-const Header = () => {
+const Header: React.FC<{ onOpenForm?: () => void }> = ({ onOpenForm }) => {
     const userContext = useUserContext();
     const router = useRouter();
     const searchParams = useSearchParams();
     const roomId = searchParams.get('roomId');
+    const role = searchParams.get('role');
     const handleLogout = () => {
         console.log('Logging out...');
         usersApi.get('/auth/logout').then(() => {
@@ -24,7 +25,12 @@ const Header = () => {
                 {/* Replace with an actual icon */}
                 🏠 Home
             </span>
-            {roomId ? <span className="text-black mr-4">Room ID: {roomId}</span> : null}
+            <>
+                {roomId ? <span className="text-black mr-4">Room ID: {roomId}</span> : null}
+                {role == 'admin' && onOpenForm ? <button onClick={onOpenForm} className="ml-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Start a new round
+                </button> : null}
+            </>
             <div>
                 <span className="text-black font-semibold">{userContext?.user?.username}</span>
                 <button onClick={handleLogout} className="ml-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
