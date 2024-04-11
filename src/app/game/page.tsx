@@ -64,6 +64,16 @@ const RoomPage: React.FC = () => {
             else if (data.type === 'ping') {
                 webSocketRef.current?.send(JSON.stringify({ type: 'pong' }));
             }
+            else if (data.type === 'round-start') {
+                setAction(prevPath => [...prevPath, { type: data.type }]);
+                alert('Round started!');
+            }
+            else if (data.type === 'round-finish') {
+                alert('Round finished!, correct answer was: ' + data.correctAnswer);
+            }
+            else if (data.type === 'correct') {
+                alert('Correct answer by: ' + data.winner + '!\n' + "it was: " + data.correctAnswers);
+            }
         };
 
         webSocketRef.current.onclose = (event) => {

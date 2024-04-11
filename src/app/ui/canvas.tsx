@@ -74,6 +74,11 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, send
                 else if (action.type === 'draw-stop') {
                     context.closePath();
                 }
+                else if (action.type === 'round-start') {
+                    if (canvas && context) {
+                        context.clearRect(0, 0, canvas.width, canvas.height);
+                      }
+                }
             });
             actions.length ? setActions([]) : null;
         };
