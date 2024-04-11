@@ -46,7 +46,7 @@ export default function Login() {
     return (
         <div className="flex min-h-screen items-center justify-center px-4 sm:px-6 lg:px-8">
             <form onSubmit={onSubmit} className="space-y-3 w-full max-w-md">
-                <div className="flex-1 rounded-lg bg-gray-50 p-6 font-lusitana"> {/* Custom font class applied */}
+                <div className="flex-1 rounded-lg bg-gray-50 p-6 font-lusitana"> 
                     <h1 className="mb-3 text-2xl text-black">Please log in to continue.</h1>
                     <div className="w-full">
                         <div>
