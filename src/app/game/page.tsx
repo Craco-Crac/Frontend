@@ -9,7 +9,7 @@ import { useUserContext } from "@/app/lib/context/UserContext";
 import { StartForm } from '@/app/ui/startForm';
 import { gameApi } from "@/config/axios.config";
 
-type ChatMessage = {
+interface ChatMessage {
     sender: string;
     text: string;
     date?: string;
@@ -23,21 +23,21 @@ type ActionState = {
 
 const RoomPage: React.FC = () => {
     const userContext = useUserContext();
-    const username = userContext?.user?.username
     const searchParams = useSearchParams();
     const roomId = searchParams.get('roomId');
     const role = searchParams.get('role');
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [action, setAction] = useState<ActionState[]>([]);
     const webSocketRef = useRef<WebSocket | null>(null);
-    const [isWebSocketConnected, setIsWebSocketConnected] = useState<number>(0);
+    const [isWebSocketConnected, setIsWebSocketConnected] =
+        useState<{ connected: boolean, errMessage?: string }>({ connected: false });
     const [isFormOpen, setIsFormOpen] = useState(false);
 
 
     const handleOpenForm = () => setIsFormOpen(true);
     const handleCloseForm = () => setIsFormOpen(false);
     const handleSubmitForm = (answer: string, delay: number) => {
-        console.log("Answer Submitted: ", answer, "Delay: ", delay);
+        console.log("Gamge starts, answer: ", answer, "Delay: ", delay);
         const delayUntilFinish = delay * 1000;
         gameApi.post('/start/' + roomId, { answer, delayUntilFinish }).then(res => { console.log(res.data) });
         setIsFormOpen(false); // Close the form upon submission
@@ -51,7 +51,7 @@ const RoomPage: React.FC = () => {
 
         webSocketRef.current.onopen = () => {
             console.log('WebSocket connection established');
-            setIsWebSocketConnected(1);
+            setIsWebSocketConnected({ connected: true, errMessage: undefined });
         };
 
         webSocketRef.current.onmessage = (event) => {
@@ -73,23 +73,25 @@ const RoomPage: React.FC = () => {
                 alert('Round finished!, correct answer was: ' + data.correctAnswer);
             }
             else if (data.type === 'correct') {
-                alert('Correct answer by: ' + data.winner + '!\n' + "it was: " + data.correctAnswers);
+                alert('Correct answer by: ' + data.winner + '!\n' + "correct answer was: " + data.correctAnswer);
             }
         };
 
         webSocketRef.current.onclose = (event) => {
             console.log('WebSocket connection closed', event.code);
             if (event.code === 4002) {
-                setIsWebSocketConnected(2);
+                setIsWebSocketConnected({ connected: false, errMessage: "Too many admins" });
             }
-            else {
-                setIsWebSocketConnected(0);
+            else if (event.code === 4001) {
+                setIsWebSocketConnected({ connected: false, errMessage: "Room not found" });
+            } else {
+                setIsWebSocketConnected({ connected: false, errMessage: "Unknown error" });
             }
         };
 
         webSocketRef.current.onerror = (error) => {
             console.error('WebSocket error:', error);
-            setIsWebSocketConnected(1);
+            setIsWebSocketConnected({ connected: false, errMessage: "Unknown error" });
         };
 
         // Clean up the WebSocket connection when the component unmounts
@@ -98,18 +100,24 @@ const RoomPage: React.FC = () => {
                 webSocketRef.current.close();
             }
         };
-    }, [roomId]);
+    }, [roomId, role]);
+
 
     const sendChatMessage = useCallback((messageContent: string) => {
+        if (!userContext?.user?.username) {
+            console.log('Username is not loaded yet');
+            return;
+        }
         const message = {
             type: 'chat',
             text: messageContent,
-            sender: username!,
+            sender: userContext.user.username,
         };
+
         webSocketRef.current?.send(JSON.stringify(message));
         console.log('messages', message);
         setMessages(prevMessages => [...prevMessages, message]);
-    }, []);
+    }, [userContext?.user?.username]);
 
     // Callback for sending draw actions
     const sendDrawAction = useCallback((type: string, point?: Point) => {
@@ -127,18 +135,21 @@ const RoomPage: React.FC = () => {
     }, []);
 
     return (
-        <div className="flex flex-col h-screen">
+
+        < div className="flex flex-col h-screen" >
             <Header onOpenForm={handleOpenForm} />
-            {isWebSocketConnected == 1 ? (
-                <main className="flex flex-1">
-                    <StartForm isOpen={isFormOpen} onClose={handleCloseForm} onSubmit={handleSubmitForm} />
-                    <DrawingCanvas actions={action} setActions={setAction} sendDrawAction={sendDrawAction} />
-                    <ChatWindow messages={messages} sendChatMessage={sendChatMessage} />
-                </main>
-            ) : (
-                isWebSocketConnected == 2 ? <div>Too much admins</div> : <div>Loading...</div>
-            )}
-        </div>
+            {
+                isWebSocketConnected.connected ? (
+                    <main className="flex flex-1">
+                        <StartForm isOpen={isFormOpen} onClose={handleCloseForm} onSubmit={handleSubmitForm} />
+                        <DrawingCanvas actions={action} setActions={setAction} sendDrawAction={sendDrawAction} />
+                        <ChatWindow messages={messages} sendChatMessage={sendChatMessage} />
+                    </main>
+                ) : (
+                    isWebSocketConnected.errMessage ? <div>{isWebSocketConnected.errMessage}</div> : <div>Loading...</div>
+                )
+            }
+        </div >
     );
 };
 
