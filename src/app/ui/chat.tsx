@@ -23,7 +23,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, sendChatMessage }) =>
 
     return (
         <div className="flex flex-col justify-between h-full bg-gray-100 border-l border-gray-300">
-            <div className="p-4 overflow-auto max-h-[65vh]">
+            <div className="p-4 overflow-auto max-h-[75vh]">
                 {messages.map((msg, index) => (
                     <div key={index} className="mb-2 last:mb-0 p-2 bg-white rounded shadow text-black">
                         <strong>{msg.sender}</strong> {msg.date ? <small>{msg.date}</small> : null}

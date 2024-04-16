@@ -2,12 +2,14 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Compressor from 'compressorjs';
 
 export type Point = { x: number; y: number };
+export type Action = { type: string, point?: Point, url?: string };
 type DrawingCanvasProps = {
-    actions: { type: string, point?: Point }[];
-    setActions: (actions: { type: string, point?: Point }[]) => void;
-    sendDrawAction: (type: string, point?: Point) => void;
+    actions: Action[];
+    setActions: (actions: Action[]) => void;
+    sendDrawAction: (type: string, point?: Point, snapshot?: Blob) => void;
 };
 
 const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, sendDrawAction }) => {
@@ -16,6 +18,18 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, send
     const searchParams = useSearchParams();
     const role = searchParams.get('role');
 
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+    }, []);
+
+    
     useEffect(() => {
         const canvas = canvasRef.current;
         const context = canvas?.getContext('2d');
@@ -77,7 +91,40 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, send
                 else if (action.type === 'round-start') {
                     if (canvas && context) {
                         context.clearRect(0, 0, canvas.width, canvas.height);
-                      }
+                    }
+                }
+                else if (action.type === 'req-snapshot') {
+                    if (canvas) {
+
+                        canvas.toBlob((blob) => {
+                            if (blob) {
+                                new Compressor(blob, {
+                                    quality: 0.6,
+                                    success: (compressedResult) => {
+                                        sendDrawAction('snapshot', undefined, compressedResult);
+                                        const url = URL.createObjectURL(compressedResult);
+                                    },
+                                });
+                                const url = URL.createObjectURL(blob);
+                            }
+                        }, 'image/jpeg');
+                    }
+                }
+                else if (action.type === 'render') {
+                    const img = new Image();
+                    if (action.url && canvas) {
+                        img.onload = () => {
+                            URL.revokeObjectURL(action.url as string);
+                            canvas.width = img.width;
+                            canvas.height = img.height;
+                            context.clearRect(0, 0, canvas.width, canvas.height);
+                            context.drawImage(img, 0, 0);
+                        };
+                        img.onerror = (e) => {
+                            console.error('Error loading image from blob', e);
+                        };
+                        img.src = action.url;
+                    }
                 }
             });
             actions.length ? setActions([]) : null;

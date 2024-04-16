@@ -55,6 +55,15 @@ const RoomPage: React.FC = () => {
         };
 
         webSocketRef.current.onmessage = (event) => {
+            if (event.data instanceof Blob) {
+                const url = URL.createObjectURL(event.data);
+                if (event.data.size > 0) {
+                    console.log(event.data);
+                }
+                setAction(prevPath => [...prevPath, {type: 'render', url: url}]);
+                // console.log(url);
+                return
+            }
             console.log('WebSocket message received:', event.data);
             const data = JSON.parse(event.data);
             if (data.type === 'chat') {
@@ -74,6 +83,9 @@ const RoomPage: React.FC = () => {
             }
             else if (data.type === 'correct') {
                 alert('Correct answer by: ' + data.winner + '!\n' + "correct answer was: " + data.correctAnswer);
+            }
+            else if(data.type === 'req-snapshot') {
+                setAction(prevPath => [...prevPath, data]);
             }
         };
 
@@ -119,8 +131,7 @@ const RoomPage: React.FC = () => {
         setMessages(prevMessages => [...prevMessages, message]);
     }, [userContext?.user?.username]);
 
-    // Callback for sending draw actions
-    const sendDrawAction = useCallback((type: string, point?: Point) => {
+    const sendDrawAction = useCallback((type: string, point?: Point, snapshot?: Blob) => {
         if (type === 'draw' || type === 'draw-start') {
             const drawAction = {
                 type: type,
@@ -131,6 +142,13 @@ const RoomPage: React.FC = () => {
         else if (type === 'draw-stop') {
             const drawAction = { type: type, };
             webSocketRef.current?.send(JSON.stringify(drawAction));
+        }
+        else if(type === 'snapshot') {
+            
+            if(snapshot) 
+                webSocketRef.current?.send(snapshot);
+            else
+                console.log(snapshot);
         }
     }, []);
 
