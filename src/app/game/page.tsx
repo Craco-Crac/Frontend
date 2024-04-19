@@ -47,7 +47,7 @@ const RoomPage: React.FC = () => {
     useEffect(() => {
         if (!roomId) return;
 
-        webSocketRef.current = new WebSocket(`ws://localhost:8000/game/?role=${role}&roomId=${roomId}`);
+        webSocketRef.current = new WebSocket(`${process.env.NEXT_PUBLIC_GAME_WS}/game/?role=${role}&roomId=${roomId}`);
 
         webSocketRef.current.onopen = () => {
             console.log('WebSocket connection established');
