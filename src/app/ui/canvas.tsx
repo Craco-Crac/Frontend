@@ -4,7 +4,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Compressor from 'compressorjs';
 
-export type Point = { x: number; y: number };
+export type Point = { x: number; y: number, color: string, lineWidth: number };
 export type Action = { type: string, point?: Point, url?: string };
 type DrawingCanvasProps = {
     actions: Action[];
@@ -17,6 +17,14 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, send
     const [isDrawing, setIsDrawing] = useState(false);
     const searchParams = useSearchParams();
     const role = searchParams.get('role');
+    const [color, setColor] = useState('#000000');
+    const colorInputRef = useRef<HTMLInputElement>(null);
+    const [lineWidth, setLineWidth] = useState(5);
+
+    const openColorPicker = () => {
+        if (colorInputRef.current)
+            colorInputRef.current.click();
+    };
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -42,9 +50,13 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, send
             const scaleY = canvas.height / rect.height;
             const x = (e.clientX - rect.left) * scaleX;
             const y = (e.clientY - rect.top) * scaleY;
+
+            context.strokeStyle = color;
+            context.lineWidth = lineWidth; 
+
             context.beginPath();
             context.moveTo(x, y);
-            sendDrawAction('draw-start', { x, y });
+            sendDrawAction('draw-start', { x, y, color, lineWidth });
             setIsDrawing(true);
         };
 
@@ -56,8 +68,11 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, send
             const x = (e.clientX - rect.left) * scaleX;
             const y = (e.clientY - rect.top) * scaleY;
 
+            context.strokeStyle = color;
+            context.lineWidth = lineWidth; 
+
             context.lineTo(x, y);
-            sendDrawAction('draw', { x, y });
+            sendDrawAction('draw-start', { x, y, color, lineWidth });
             context.stroke();
         };
 
@@ -79,7 +94,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, send
             canvas.removeEventListener('mouseup', stopDrawing);
             canvas.removeEventListener('mouseleave', stopDrawing);
         };
-    }, [isDrawing]);
+    }, [isDrawing]); //eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -142,14 +157,30 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, send
         };
 
         redrawPaths();
-    }, [actions]);
+    }, [actions]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    return <canvas
-        ref={canvasRef}
-        width={900}
-        height={500}
-        className="border-2 border-gray-300 bg-white"
-    />
+    return (<div className="relative">
+        <canvas
+            ref={canvasRef}
+            width={980}
+            height={540}
+            className="border-2 border-gray-300 bg-white"
+        />
+        <button
+            onClick={openColorPicker}
+            className="absolute top-0 left-0 m-2 p-2 bg-white text-black border rounded"
+            style={{ zIndex: 10 }}
+        >
+            Pick Color
+        </button>
+        <input
+            ref={colorInputRef}
+            type="color"
+            className="hidden"
+            value={color}
+            onChange={(e) => setColor(e.target.value)}
+        />
+    </div>)
 };
 
 export default DrawingCanvas;
