@@ -3,11 +3,12 @@ import React, { useState } from 'react';
 export const StartForm: React.FC<{ isOpen: boolean; onClose: () => void; onSubmit: (answer: string, delay: number) => void; }> = ({ isOpen, onClose, onSubmit }) => {
     const [answer, setAnswer] = useState('');
     const [delayUntilFinish, setDelayUntilFinish] = useState('');
-
+    const [pending, setPending] = useState(false);
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const delayNum = parseInt(delayUntilFinish, 10);
         if (!isNaN(delayNum)) {
+            setPending(true);
             onSubmit(answer, delayNum);
         }
     };
@@ -46,6 +47,7 @@ export const StartForm: React.FC<{ isOpen: boolean; onClose: () => void; onSubmi
                     </form>
                     <div className="items-center px-4 py-3">
                         <button
+                            aria-disabled={pending} disabled={pending}
                             onClick={onClose}
                             className="px-4 py-2 bg-gray-200 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-500"
                         >

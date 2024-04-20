@@ -164,7 +164,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, send
     }, [actions]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (<div className="relative">
-        <div className="absolute top-0 left-0 z-10 flex space-x-2 m-2 p-2 bg-white rounded shadow-md">
+        {role == 'admin' ? < div className="absolute top-0 left-0 z-10 flex space-x-2 m-2 p-2 bg-white rounded shadow-md">
             <button
                 onClick={openColorPicker}
                 className="bg-white text-black border rounded"
@@ -179,24 +179,25 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, send
                 onChange={(e) => setColor(e.target.value)}
             />
             <label className="flex items-center space-x-1">
-          <span className='text-black'>Width:</span>
-          <input
-            type="range"
-            min="1"
-            max="20"
-            value={lineWidth}
-            onChange={(e) => setLineWidth(Number(e.target.value))}
-            className="w-24"  // Adjust width as needed
-          />
-        </label>
-        </div>
+                <span className='text-black'>Width:</span>
+                <input
+                    type="range"
+                    min="1"
+                    max="20"
+                    value={lineWidth}
+                    onChange={(e) => setLineWidth(Number(e.target.value))}
+                    className="w-24" 
+                />
+            </label>
+        </div> : null
+        }
         <canvas
             ref={canvasRef}
             width={980}
             height={540}
             className="border-2 border-gray-300 bg-white"
         />
-    </div>
+    </div >
     );
 };
 

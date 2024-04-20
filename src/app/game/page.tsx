@@ -159,8 +159,8 @@ const RoomPage: React.FC = () => {
             {
                 isWebSocketConnected.connected ? (
                     <main className="flex flex-1">
-                        <StartForm isOpen={isFormOpen} onClose={handleCloseForm} onSubmit={handleSubmitForm} />
                         <DrawingCanvas actions={action} setActions={setAction} sendDrawAction={sendDrawAction} />
+                        <StartForm isOpen={isFormOpen} onClose={handleCloseForm} onSubmit={handleSubmitForm} />
                         <ChatWindow messages={messages} sendChatMessage={sendChatMessage} />
                     </main>
                 ) : (
