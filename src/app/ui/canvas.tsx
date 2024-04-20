@@ -29,7 +29,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, send
         }
     }, []);
 
-    
+
     useEffect(() => {
         const canvas = canvasRef.current;
         const context = canvas?.getContext('2d');
@@ -37,16 +37,27 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, send
         if (!canvas || !context) return;
 
         const startDrawing = (e: MouseEvent) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
             context.beginPath();
-            context.moveTo(e.offsetX, e.offsetY);
-            sendDrawAction('draw-start', { x: e.offsetX, y: e.offsetY });
+            context.moveTo(x, y);
+            sendDrawAction('draw-start', { x, y });
             setIsDrawing(true);
         };
 
         const draw = (e: MouseEvent) => {
             if (!isDrawing) return;
-            context.lineTo(e.offsetX, e.offsetY);
-            sendDrawAction('draw', { x: e.offsetX, y: e.offsetY });
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+
+            context.lineTo(x, y);
+            sendDrawAction('draw', { x, y });
             context.stroke();
         };
 
