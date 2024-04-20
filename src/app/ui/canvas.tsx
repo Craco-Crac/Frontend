@@ -52,7 +52,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, send
             const y = (e.clientY - rect.top) * scaleY;
 
             context.strokeStyle = color;
-            context.lineWidth = lineWidth; 
+            context.lineWidth = lineWidth;
 
             context.beginPath();
             context.moveTo(x, y);
@@ -69,10 +69,10 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, send
             const y = (e.clientY - rect.top) * scaleY;
 
             context.strokeStyle = color;
-            context.lineWidth = lineWidth; 
+            context.lineWidth = lineWidth;
 
             context.lineTo(x, y);
-            sendDrawAction('draw-start', { x, y, color, lineWidth });
+            sendDrawAction('draw', { x, y, color, lineWidth });
             context.stroke();
         };
 
@@ -104,10 +104,14 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, send
         const redrawPaths = () => {
             actions.forEach((action, index) => {
                 if (action.type === 'draw') {
+                    context.strokeStyle = action.point!.color;
+                    context.lineWidth = action.point!.lineWidth;
                     context.lineTo(action.point!.x, action.point!.y);
                     context.stroke();
                 }
                 else if (action.type === 'draw-start') {
+                    context.strokeStyle = color;
+                    context.lineWidth = lineWidth;
                     context.moveTo(action.point!.x, action.point!.y);
                     context.beginPath();
                 }
@@ -160,27 +164,40 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, send
     }, [actions]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (<div className="relative">
+        <div className="absolute top-0 left-0 z-10 flex space-x-2 m-2 p-2 bg-white rounded shadow-md">
+            <button
+                onClick={openColorPicker}
+                className="bg-white text-black border rounded"
+            >
+                🎨
+            </button>
+            <input
+                ref={colorInputRef}
+                type="color"
+                className="hidden"
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+            />
+            <label className="flex items-center space-x-1">
+          <span className='text-black'>Width:</span>
+          <input
+            type="range"
+            min="1"
+            max="20"
+            value={lineWidth}
+            onChange={(e) => setLineWidth(Number(e.target.value))}
+            className="w-24"  // Adjust width as needed
+          />
+        </label>
+        </div>
         <canvas
             ref={canvasRef}
             width={980}
             height={540}
             className="border-2 border-gray-300 bg-white"
         />
-        <button
-            onClick={openColorPicker}
-            className="absolute top-0 left-0 m-2 p-2 bg-white text-black border rounded"
-            style={{ zIndex: 10 }}
-        >
-            Pick Color
-        </button>
-        <input
-            ref={colorInputRef}
-            type="color"
-            className="hidden"
-            value={color}
-            onChange={(e) => setColor(e.target.value)}
-        />
-    </div>)
+    </div>
+    );
 };
 
 export default DrawingCanvas;
