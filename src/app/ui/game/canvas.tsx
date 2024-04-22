@@ -96,6 +96,18 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, send
         };
     }, [isDrawing]); //eslint-disable-line react-hooks/exhaustive-deps
 
+    const clearCanvas = () => {
+        const canvas = canvasRef.current;
+        const context = canvas?.getContext('2d');
+        if (context && canvas) {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    };
+    const clearClick = () => {
+        clearCanvas();
+        sendDrawAction('draw-clear');
+    };
+
     useEffect(() => {
         const canvas = canvasRef.current;
         const context = canvas?.getContext('2d');
@@ -119,9 +131,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, send
                     context.closePath();
                 }
                 else if (action.type === 'round-start') {
-                    if (canvas && context) {
-                        context.clearRect(0, 0, canvas.width, canvas.height);
-                    }
+                    clearCanvas()
                 }
                 else if (action.type === 'req-snapshot') {
                     if (canvas) {
@@ -156,6 +166,9 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, send
                         img.src = action.url;
                     }
                 }
+                else if(action.type === 'draw-clear'){
+                    clearCanvas();
+                }
             });
             actions.length ? setActions([]) : null;
         };
@@ -186,9 +199,12 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, send
                     max="20"
                     value={lineWidth}
                     onChange={(e) => setLineWidth(Number(e.target.value))}
-                    className="w-24" 
+                    className="w-24"
                 />
             </label>
+            <button onClick={clearClick} className="p-2 bg-blue-500 text-white rounded">
+                Clear
+            </button>
         </div> : null
         }
         <canvas

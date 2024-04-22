@@ -3,8 +3,8 @@
 import { useSearchParams } from 'next/navigation';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import Header from '@/app/ui/header';
-import DrawingCanvas, { Point } from '@/app/ui/canvas';
-import ChatWindow from '@/app/ui/chat';
+import DrawingCanvas, { Point } from '@/app/ui/game/canvas';
+import ChatWindow from '@/app/ui/game/chat';
 import { useUserContext } from "@/app/lib/context/UserContext";
 import { StartForm } from '@/app/ui/startForm';
 import { gameApi } from "@/config/axios.config";
@@ -139,7 +139,7 @@ const RoomPage: React.FC = () => {
             };
             webSocketRef.current?.send(JSON.stringify(drawAction));
         }
-        else if (type === 'draw-stop') {
+        else if (type === 'draw-stop' || type === 'draw-clear') {
             const drawAction = { type: type, };
             webSocketRef.current?.send(JSON.stringify(drawAction));
         }
