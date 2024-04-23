@@ -20,13 +20,25 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, send
     const [color, setColor] = useState('#000000');
     const colorInputRef = useRef<HTMLInputElement>(null);
     const [lineWidth, setLineWidth] = useState(5);
+    const [canvasSize, setCanvasSize] = useState({ width: 980, height: 540 });
 
     const openColorPicker = () => {
         if (colorInputRef.current)
             colorInputRef.current.click();
     };
 
-    useEffect(() => {
+    const updateCanvasSize = () => {
+        const height = window.innerHeight * 0.88;
+        const width = window.innerWidth * 0.8;
+        setCanvasSize({ width, height });
+        const canvas = canvasRef.current;
+        if (canvas) {
+            canvas.width = width;
+            canvas.height = height;
+        }
+    };
+
+    const clearWhite = () => {
         const canvas = canvasRef.current;
         if (canvas) {
             const ctx = canvas.getContext('2d');
@@ -35,8 +47,17 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, send
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
         }
-    }, []);
+    }
 
+
+    useEffect(() => {
+        window.addEventListener('resize', updateCanvasSize);
+        updateCanvasSize(); 
+        clearWhite();
+        return () => {
+            window.removeEventListener('resize', updateCanvasSize);
+          };
+    }, []);
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -102,6 +123,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, send
         if (context && canvas) {
             context.clearRect(0, 0, canvas.width, canvas.height);
         }
+        clearWhite();
     };
     const clearClick = () => {
         clearCanvas();
@@ -166,7 +188,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, send
                         img.src = action.url;
                     }
                 }
-                else if(action.type === 'draw-clear'){
+                else if (action.type === 'draw-clear') {
                     clearCanvas();
                 }
             });
@@ -209,8 +231,8 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, send
         }
         <canvas
             ref={canvasRef}
-            width={980}
-            height={540}
+            width={canvasSize.width}
+            height={canvasSize.height}
             className="border-2 border-gray-300 bg-white"
         />
     </div >
