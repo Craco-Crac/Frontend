@@ -28,8 +28,8 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ actions, setActions, send
     };
 
     const updateCanvasSize = () => {
-        const height = window.innerHeight;
-        const width = window.innerWidth;
+        const height = window.innerHeight * 0.88;
+        const width = window.innerWidth * 0.85;
         setCanvasSize({ width, height });
         const canvas = canvasRef.current;
         if (canvas) {
